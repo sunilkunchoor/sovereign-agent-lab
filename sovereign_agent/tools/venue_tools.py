@@ -182,6 +182,9 @@ def generate_event_flyer(venue_name: str, guest_count: int, event_theme: str) ->
     """    
     from openai import OpenAI
     import os
+
+    from dotenv import load_dotenv
+    load_dotenv()
     
     client = OpenAI(
         base_url="https://api.tokenfactory.nebius.com/v1/",
