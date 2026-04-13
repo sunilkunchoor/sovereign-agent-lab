@@ -122,19 +122,47 @@ def run_research_agent(task: str, max_turns: int = 8) -> dict:
         role    = getattr(m, "type", "unknown")
         content = m.content
 
-        # Tool-call messages have structured list content
-        if isinstance(content, list):
+        # Handle standard Langchain tool_calls
+        if hasattr(m, "tool_calls") and m.tool_calls:
+            for call in m.tool_calls:
+                entry = {
+                    "tool": call.get("name", "unknown"),
+                    "args": call.get("args", {}),
+                }
+                tool_calls_made.append(entry)
+                full_trace.append({"role": "tool_call", **entry})
+                
+        # Handle stringified JSON tool calls (sometimes returned by Llama models via ChatOpenAI)
+        elif isinstance(content, str) and content.strip().startswith('["{') and "function" in content:
+            import json
+            try:
+                parsed_content = json.loads(content)
+                for block in parsed_content:
+                    if isinstance(block, str):
+                        block = json.loads(block)
+                    if isinstance(block, dict) and block.get("type") in {"tool_call", "function"}:
+                        entry = {
+                            "tool": block.get("name", "unknown"),
+                            "args": block.get("parameters", block.get("input", {})),
+                        }
+                        tool_calls_made.append(entry)
+                        full_trace.append({"role": "tool_call", **entry})
+            except Exception:
+                pass
+                
+        # Tool-call messages have structured list content (Anthropic style fallback)
+        elif isinstance(content, list):
             for block in content:
-                if isinstance(block, dict) and block.get("type") == "tool_use":
+                if isinstance(block, dict) and block.get("type") in {"tool_call", "function", "tool_use"}:
                     entry = {
-                        "tool": block["name"],
-                        "args": block.get("input", {}),
+                        "tool": block.get("name", "unknown"),
+                        "args": block.get("input", block.get("parameters", {})),
                     }
                     tool_calls_made.append(entry)
                     full_trace.append({"role": "tool_call", **entry})
             continue
 
-        if content:
+        if content and not (isinstance(content, str) and content.strip().startswith('["{') and "function" in content):
             full_trace.append({"role": role, "content": str(content)})
             if role == "ai":
                 final_answer = str(content)

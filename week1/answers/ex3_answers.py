@@ -42,47 +42,76 @@ Conversation 3 (out of scope):
 # ── Conversation 1: Happy path ─────────────────────────────────────────────
 
 CONVERSATION_1_TRACE = """
-PASTE YOUR rasa shell TERMINAL OUTPUT HERE
+Bot loaded. Type a message and press enter (use '/stop' to exit):
+Your input ->  Hey                                        
+I'm sorry, I'm not trained to help with that.
+Your input ->  calling to confirm a booking               
+I'm sorry, I'm not trained to help with that.
+How many guests are you confirming for tonight's event?
+Your input ->  160 guests                                 
+And how many of those guests will need vegan meals?
+Your input ->  50 need vegan                              
+What deposit amount in GBP are you proposing to secure the booking?
+Your input ->  GBP 200                                    
+Thank you — booking confirmed. 160 guests, 50 requiring vegan meals, £200 deposit accepted. I'll send written confirmation to the organiser shortly.
+Is there anything else I can help you with?
 """
 
-CONVERSATION_1_OUTCOME = "FILL_ME_IN"   # "confirmed" or "escalated"
+CONVERSATION_1_OUTCOME = "confirmed"   # "confirmed" or "escalated"
 
 # ── Conversation 2: Deposit too high ───────────────────────────────────────
 
 CONVERSATION_2_TRACE = """
-PASTE YOUR rasa shell TERMINAL OUTPUT HERE
+Bot loaded. Type a message and press enter (use '/stop' to exit):
+Your input ->  calling to confirm a booking                                
+How many guests are you confirming for tonight's event?
+Your input ->  160                                                         
+And how many of those guests will need vegan meals?
+Your input ->  50                                                          
+What deposit amount in GBP are you proposing to secure the booking?
+Your input ->  GBP 1000                                                    
+I need to check one thing with the organiser before I can confirm. The issue is: a deposit of £1000 exceeds the organiser's authorised limit of £300. Can I call you back within 15 minutes?
+Is there anything else I can help you with?
 """
 
-CONVERSATION_2_OUTCOME = "FILL_ME_IN"   # "confirmed" or "escalated"
-CONVERSATION_2_REASON  = "FILL_ME_IN"   # the reason the agent gave for escalating
+CONVERSATION_2_OUTCOME = "escalated"   # "confirmed" or "escalated"
+CONVERSATION_2_REASON  = "The deposit amount exceeded the organiser's authorised limit of £300."   # the reason the agent gave for escalating
 
 # ── Conversation 3: Out of scope ───────────────────────────────────────────
 
 CONVERSATION_3_TRACE = """
-PASTE YOUR rasa shell TERMINAL OUTPUT HERE
+Bot loaded. Type a message and press enter (use '/stop' to exit):
+Your input ->  calling to confirm booking                                  
+How many guests are you confirming for tonight's event?
+Your input ->  160                                                         
+And how many of those guests will need vegan meals?
+Your input ->  can you arrange parking for the speakers                    
+I'm sorry, I'm not trained to help with that.
+I can only help with confirming tonight's venue booking. For anything else, please contact the event organiser directly.
+Would you like to continue with confirm booking?
 """
 
 # Describe what CALM did after the out-of-scope message. Min 20 words.
 CONVERSATION_3_WHAT_HAPPENED = """
-FILL ME IN
+After asking for parking, CALM successfully recognized the request was off-topic, invoked the out of scope response, and then gracefully pulled the user back to the booking flow to ask about the vegan count again.
 """
 
 # Compare Rasa CALM's handling of the out-of-scope request to what
 # LangGraph did in Exercise 2 Scenario 3. Min 40 words.
 OUT_OF_SCOPE_COMPARISON = """
-FILL ME IN
+Whereas LangGraph responded generically that the input was lacking details and gave up, Rasa CALM specifically recognized it as out of scope, played a configured deflection message, and then automatically resumed the sequence where it left off, maintaining the flow.
 """
 
 # ── Task B: Cutoff guard ───────────────────────────────────────────────────
 
-TASK_B_DONE = None   # True or False
+TASK_B_DONE = True   # True or False
 
 # List every file you changed.
-TASK_B_FILES_CHANGED = []
+TASK_B_FILES_CHANGED = ["exercise3_rasa/actions/actions.py"]
 
 # How did you test that it works? Min 20 words.
 TASK_B_HOW_YOU_TESTED = """
-FILL ME IN
+I temporarily changed the `if` condition to `if True:` to force the code block to run. When I ran a new conversation, the agent immediately triggered the escalation guard. I then reverted the condition to its time-based logic.
 """
 
 # ── CALM vs Old Rasa ───────────────────────────────────────────────────────
@@ -101,12 +130,7 @@ FILL ME IN
 # Min 30 words.
 
 CALM_VS_OLD_RASA = """
-FILL ME IN
-
-Think about:
-- What does the LLM handle now that Python handled before?
-- What does Python STILL handle, and why (hint: business rules)?
-- Is there anything you trusted more in the old approach?
+This simplification gains enormous developmental speed by letting the LLM handle noisy natural language slot extraction (e.g. 'about 160 guests') without complex NLU intent examples. However, Python still handles the deterministic business rules because we cannot risk the LLM 'negotiating' or hallucinating away financial limits. We trust Python logic for definitive constraints.
 """
 
 # ── The setup cost ─────────────────────────────────────────────────────────
@@ -120,10 +144,5 @@ Think about:
 # Min 40 words.
 
 SETUP_COST_VALUE = """
-FILL ME IN
-
-Be specific. What can the Rasa CALM agent NOT do that LangGraph could?
-Is that a feature or a limitation for the confirmation use case?
-Think about: can the CALM agent improvise a response it wasn't trained on?
-Can it call a tool that wasn't defined in flows.yml?
+Rasa CALM requires more boilerplate, but that setup buys extreme reliability for high-stakes flows. While LangGraph's agent can creatively solve problems at runtime, Rasa is intentionally restricted. It cannot improvise actions or use tools outside of what is explicitly defined in flows.yml. This limitation is actually a feature when handling legally binding transactions where unbounded capabilities create massive risk.
 """

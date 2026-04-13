@@ -7,20 +7,20 @@ Fill this in after running exercise4_mcp_client.py.
 # ── Basic results ──────────────────────────────────────────────────────────
 
 # Tool names as shown in "Discovered N tools" output.
-TOOLS_DISCOVERED = []
+TOOLS_DISCOVERED = ["search_venues", "get_venue_details"]
 
-QUERY_1_VENUE_NAME    = "FILL_ME_IN"
-QUERY_1_VENUE_ADDRESS = "FILL_ME_IN"
-QUERY_2_FINAL_ANSWER  = "FILL_ME_IN"
+QUERY_1_VENUE_NAME    = "The Albanach"
+QUERY_1_VENUE_ADDRESS = "2 Hunter Square, Edinburgh"
+QUERY_2_FINAL_ANSWER  = "No known venues can accommodate 300 guests with vegan options."
 
 # ── The experiment ─────────────────────────────────────────────────────────
 # Required: modify venue_server.py, rerun, revert.
 
-EX4_EXPERIMENT_DONE = None   # True or False
+EX4_EXPERIMENT_DONE = True   # True or False
 
 # What changed, and which files did or didn't need updating? Min 30 words.
 EX4_EXPERIMENT_RESULT = """
-FILL ME IN
+When 'The Albanach' was changed to 'full', the agent automatically selected 'The Haymarket Vaults' instead. Notably, I only had to update `mcp_venue_server.py`. I didn't have to touch the agent code or any tools list inside the agent script because the tools and state are dynamically discovered from the server.
 """
 
 # ── MCP vs hardcoded ───────────────────────────────────────────────────────
